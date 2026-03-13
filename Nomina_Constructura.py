@@ -1,6 +1,5 @@
 Nombre = "Santiago Villa Ramos"
 
-Identificacion: 1007293305
 import tkinter as tk
 from tkinter import messagebox
 

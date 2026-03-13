@@ -55,7 +55,6 @@ python Nomina_Constructura.py
 ## 👨‍💼 Información del Autor
 
 - **Nombre**: Santiago Villa Ramos
-- **Identificación**: 1007293305
 - **Asignatura**: Estructuras de Datos - Quinto Semestre UNAD
 
 ## 📝 Notas
