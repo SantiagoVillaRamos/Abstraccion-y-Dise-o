@@ -2,65 +2,82 @@
 
 ## 📋 Descripción
 
-Sistema de gestión de nómina para constructoras desarrollado en Python usando **Tkinter**. Permite registrar empleados, calcular sus salarios según el cargo y días trabajados, y generar reportes de nómina.
+Sistema de gestión de nómina para constructoras desarrollado en Python, implementando **Arquitectura Hexagonal (Ports & Adapters)** con principios SOLID, encapsulamiento y diseño orientado a objetos.
 
-## ✨ Características
+---
 
-- **Registro de empleados**: Agregar empleados con nombre, cargo y días trabajados
-- **Cálculo automático de pagos**: Calcula el total a pagar basado en el cargo y días de trabajo
-- **Salarios predefinidos**: Estructura salarial configurada por cargo:
-  - Ingeniero: $200,000/día
-  - Arquitecto: $180,000/día
-  - Maestro de obra: $120,000/día
-  - Obrero: $80,000/día
-- **Generación de reportes**: Visualización de toda la nómina registrada
-- **Interfaz gráfica amigable**: Usando Tkinter para una mejor experiencia de usuario
+## 🏗 Arquitectura Hexagonal
+
+```
+abstraccion_y_diseño/
+├── main.py                                    ← Composition Root (DI)
+│
+├── domain/                                    ← NÚCLEO (sin dependencias externas)
+│   ├── entities/
+│   │   ├── cargo.py                           ← Enum Cargo con salario diario
+│   │   └── empleado.py                        ← Entidad con lógica de negocio
+│   └── ports/
+│       ├── input/
+│       │   └── nomina_service_port.py         ← Puerto de ENTRADA (ABC)
+│       └── output/
+│           ├── empleado_repository_port.py    ← Puerto de SALIDA (ABC)
+│           └── reporte_port.py                ← Puerto de SALIDA (ABC)
+│
+├── application/                               ← CASOS DE USO
+│   └── services/
+│       └── nomina_service.py                  ← Implementa NominaServicePort
+│
+└── infrastructure/                            ← ADAPTADORES (detalles técnicos)
+    └── adapters/
+        ├── input/
+        │   └── tkinter_adapter.py             ← UI Tkinter (adaptador de entrada)
+        └── output/
+            ├── in_memory_repository.py        ← Repositorio en memoria
+            └── txt_reporte_adapter.py         ← Exporta reporte a .txt
+```
+
+### Flujo de dependencias
+
+```
+[TkinterAdapter] ──► [NominaServicePort]
+                           ▲
+                    [NominaService] ──► [EmpleadoRepositoryPort] ◄── [InMemoryRepository]
+                                   ──► [ReportePort]             ◄── [TxtReporteAdapter]
+```
+
+> El dominio **nunca** depende de infraestructura. Las dependencias apuntan hacia adentro.
+
+---
+
+## ✨ Conceptos aplicados
+
+| Concepto | Implementación |
+|---|---|
+| **Abstracción** | Clases abstractas (ABC) para todos los puertos |
+| **Encapsulamiento** | Propiedades privadas en `Empleado`, copia defensiva en repositorio |
+| **Herencia / Polimorfismo** | Adaptadores concretos extienden puertos abstractos |
+| **Inyección de dependencias** | `NominaService` recibe puertos por constructor |
+| **SOLID - D** | Main.py inyecta implementaciones; el servicio solo conoce interfaces |
+| **Enum** | `Cargo` como tipo seguro con salario encapsulado |
+| **Separación de capas** | Domain / Application / Infrastructure / UI completamente separadas |
+
+---
 
 ## 🛠️ Requisitos
 
-- Python 3.6+
-- Tkinter (incluido por defecto en Python)
+- Python 3.10+
+- Tkinter (incluido en Python estándar)
 
-## 🚀 Instalación
-
-1. Clonar o descargar el proyecto
-2. No requiere instalación de dependencias adicionales
-
-## 📖 Uso
-
-Ejecutar el programa:
+## 🚀 Ejecución
 
 ```bash
-python Nomina_Constructura.py
+python main.py
 ```
 
-### Pasos para usar:
-
-1. **Ingresar nombre del empleado** en el campo de texto
-2. **Seleccionar el cargo** del empleado (Ingeniero, Arquitecto, Maestro de obra u Obrero)
-3. **Ingresar los días trabajados** en el campo correspondiente
-4. **Calcular Pago**: Ver el total a pagar antes de guardar
-5. **Guardar**: Registrar el empleado en el sistema
-6. **Mostrar Reporte**: Ver todos los empleados registrados y sus montos a pagar
-
-## 📁 Estructura del código
-
-- **Diccionario `salarios`**: Almacena los salarios diarios por cargo
-- **Lista `empleados`**: Guarda los registros de todos los empleados
-- **`calcular_pago()`**: Calcula el monto a pagar
-- **`guardar()`**: Registra el empleado en el sistema
-- **`reporte()`**: Genera una ventana con el reporte completo de nómina
-- **Interfaz gráfica**: Ventana principal con campos de entrada y botones de acción
-
-## 👨‍💼 Información del Autor
+## 👨‍💼 Autor
 
 - **Nombre**: Santiago Villa Ramos
 - **Asignatura**: Estructuras de Datos - Quinto Semestre UNAD
 
-## 📝 Notas
-
-Este proyecto es un trabajo académico que implementa conceptos de estructuras de datos y diseño orientado a objetos en Python.
-
 ---
-
 *Última actualización: Marzo 2026*
