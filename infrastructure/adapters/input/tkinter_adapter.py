@@ -107,11 +107,94 @@ class TkinterAdapter:
         try:
             nombre, cargo, dias = self._leer_inputs()
             total = self._servicio.calcular_pago(nombre, cargo, dias)
-            self._label_resultado.config(
-                text=f"Total a pagar: ${total:,}", fg="#a6e3a1"
-            )
+            # Obtener salario diario para mostrar el desglose en la ventana
+            cargo_obj = Cargo.desde_descripcion(cargo)
+            salario_diario = cargo_obj.get_salario_diario()
+            self._mostrar_resultado_pago(nombre, cargo, dias, salario_diario, total)
         except ValueError as e:
             messagebox.showwarning("Datos inválidos", str(e))
+        except Exception as e:
+            messagebox.showerror("Error inesperado", str(e))
+
+    def _mostrar_resultado_pago(
+        self, nombre: str, cargo: str, dias: int, salario_diario: int, total: int
+    ) -> None:
+        """Abre una ventana emergente con el desglose detallado del pago."""
+        ventana = tk.Toplevel(self._ventana)
+        ventana.title("Resultado del Cálculo")
+        ventana.geometry("400x420")
+        ventana.resizable(False, False)
+        ventana.configure(bg="#1e1e2e")
+        ventana.grab_set()  # Modal: bloquea la ventana principal mientras está abierta
+
+        # Centrar respecto a la ventana principal
+        ventana.transient(self._ventana)
+        ventana.update_idletasks()
+        x = self._ventana.winfo_x() + (self._ventana.winfo_width() // 2) - 200
+        y = self._ventana.winfo_y() + (self._ventana.winfo_height() // 2) - 210
+        ventana.geometry(f"+{x}+{y}")
+
+        # ── Encabezado ──────────────────────────────────────────────────
+        frame_header = tk.Frame(ventana, bg="#89b4fa", pady=18)
+        frame_header.pack(fill="x")
+        tk.Label(
+            frame_header, text="💰 Resumen de Pago",
+            bg="#89b4fa", fg="#1e1e2e", font=("Inter", 14, "bold")
+        ).pack()
+        tk.Label(
+            frame_header, text="Constructora Mejor",
+            bg="#89b4fa", fg="#1e1e2e", font=("Inter", 9)
+        ).pack()
+
+        # ── Tarjeta de detalles ─────────────────────────────────────────
+        frame_card = tk.Frame(ventana, bg="#313244", padx=24, pady=20)
+        frame_card.pack(fill="x", padx=20, pady=(16, 10))
+
+        def fila(etiqueta: str, valor: str, color_valor: str = "#cdd6f4"):
+            f = tk.Frame(frame_card, bg="#313244")
+            f.pack(fill="x", pady=4)
+            tk.Label(f, text=etiqueta, bg="#313244", fg="#6c7086",
+                     font=("Inter", 9), anchor="w").pack(side="left")
+            tk.Label(f, text=valor, bg="#313244", fg=color_valor,
+                     font=("Inter", 9, "bold"), anchor="e").pack(side="right")
+
+        fila("👤  Empleado", nombre)
+        fila("🏗️  Cargo", cargo)
+        fila("📅  Días trabajados", f"{dias} días")
+        fila("💵  Salario diario", f"${salario_diario:,.0f}")
+
+        # Separador
+        tk.Frame(frame_card, bg="#45475a", height=1).pack(fill="x", pady=(10, 6))
+
+        # Total destacado
+        tk.Label(
+            frame_card, text="TOTAL A PAGAR",
+            bg="#313244", fg="#6c7086", font=("Inter", 8, "bold")
+        ).pack()
+        tk.Label(
+            frame_card, text=f"${total:,.0f}",
+            bg="#313244", fg="#a6e3a1", font=("Inter", 22, "bold")
+        ).pack(pady=(2, 0))
+        tk.Label(
+            frame_card, text="COP",
+            bg="#313244", fg="#6c7086", font=("Inter", 8)
+        ).pack()
+
+        # ── Fórmula ─────────────────────────────────────────────────────
+        tk.Label(
+            ventana,
+            text=f"${salario_diario:,.0f} × {dias} días = ${total:,.0f}",
+            bg="#1e1e2e", fg="#45475a", font=("Inter", 8)
+        ).pack(pady=(0, 10))
+
+        # ── Botón cerrar ─────────────────────────────────────────────────
+        tk.Button(
+            ventana, text="Cerrar",
+            command=ventana.destroy,
+            bg="#f38ba8", fg="#1e1e2e", activebackground="#eba0ac",
+            relief="flat", font=("Inter", 10, "bold"),
+            cursor="hand2", padx=20, pady=6
+        ).pack(pady=(0, 18))
 
     def _on_guardar(self) -> None:
         """Llama al caso de uso registrar_empleado a través del puerto de entrada."""
@@ -119,13 +202,15 @@ class TkinterAdapter:
             nombre, cargo, dias = self._leer_inputs()
             empleado = self._servicio.registrar_empleado(nombre, cargo, dias)
             self._label_resultado.config(
-                text=f"✅ Guardado: {empleado.nombre} — ${empleado.calcular_pago():,}",
+                text=f"✅ Guardado: {empleado.nombre} — ${empleado.calcular_pago():,.0f}",
                 fg="#a6e3a1"
             )
             self._entry_nombre.delete(0, tk.END)
             self._entry_dias.delete(0, tk.END)
         except ValueError as e:
             messagebox.showwarning("Datos inválidos", str(e))
+        except Exception as e:
+            messagebox.showerror("Error inesperado", str(e))
 
     def _on_reporte(self) -> None:
         """Llama al caso de uso generar_reporte y muestra el resultado en una ventana."""
