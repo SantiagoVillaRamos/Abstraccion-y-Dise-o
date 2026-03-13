@@ -1,0 +1,17 @@
+# Entorno virtual
+.venv/
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Reporte generado
+reporte_nomina.txt
+
+# Variables de entorno (si contiene secretos)
+# .env   ← descomenta si no quieres subir el .env
+
+# IDEs
+.idea/
